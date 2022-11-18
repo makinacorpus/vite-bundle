@@ -1,0 +1,18 @@
+{
+  "node_modules/primeicons/fonts/primeicons.svg": {
+    "file": "assets/primeicons.8f9d2aaf.svg",
+    "src": "node_modules/primeicons/fonts/primeicons.svg"
+  },
+  "src/main.ts": {
+    "file": "assets/main.d2b010b8.js",
+    "src": "src/main.ts",
+    "isEntry": true,
+    "assets": [
+      "assets/primeicons.8f9d2aaf.svg"
+    ]
+  },
+  "style.css": {
+    "file": "assets/style.276b072b.css",
+    "src": "style.css"
+  }
+}

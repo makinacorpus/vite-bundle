@@ -1,0 +1,10 @@
+services:
+    vite.manifest.registry:
+        class: MakinaCorpus\ViteBundle\Manifest\ManifestRegistry
+        arguments: [[]]
+    MakinaCorpus\ViteBundle\Manifest\ManifestRegistry:
+        alias: vite.manifest.registry
+    vite.twig.extension:
+        class: MakinaCorpus\ViteBundle\Twig\Extension\ViteTwigExtension
+        arguments: ["@vite.manifest.registry"]
+        tags: ['twig.extension']

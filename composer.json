@@ -1,0 +1,32 @@
+{
+    "name": "makinacorpus/vite-bundle",
+    "type": "library",
+    "description": "Helps with Vite generated app Twig integration, no less, no more (\"Vite fait, bien fait\").",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Makina Corpus",
+            "email": "drupal@makina-corpus.com",
+            "homepage": "https://makina-corpus.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "MakinaCorpus\\ViteBundle\\" : "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MakinaCorpus\\ViteBundle\\Tests\\" : "tests/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
