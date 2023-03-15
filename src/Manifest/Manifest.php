@@ -20,6 +20,7 @@ class Manifest
     public static function validateManifestFile(string $manifestPath, string $publicPath): array
     {
         $publicPath = \rtrim($publicPath, '/');
+        $rpPublicPath = \realpath($publicPath);
 
         if ('/' !== \substr($manifestPath, 0, 1)) {
             $manifestPath = $publicPath . '/' . $manifestPath;
@@ -31,10 +32,10 @@ class Manifest
         }
 
         // Find root relative to public path.
-        if (\substr($manifestPath, 0, \strlen($publicPath)) !== $publicPath) {
+        if (\substr($manifestPath, 0, \strlen($rpPublicPath)) !== $rpPublicPath) {
             throw new \InvalidArgumentException(\sprintf("File is not in \"%%kernel.project_dir%%/public/\" directory: %s", $manifestPath));
         }
-        $relativeFileDirectory = '/' . \trim(\dirname(\substr($manifestPath, \strlen($publicPath))), '/');
+        $relativeFileDirectory = '/' . \trim(\dirname(\substr($manifestPath, \strlen($rpPublicPath))), '/');
 
         if (!\file_exists($manifestPath)) {
             throw new \InvalidArgumentException(\sprintf("File does not exist: %s", $manifestPath));
