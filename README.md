@@ -125,7 +125,7 @@ Edit any Twig file and add the following two function calls:
 {{ vite_head('some-vite-app') }}
 </head>
 <body>
-  <div id="app"></div>
+  {{ vite_body('some-vite-app') }}
 </body>
 </html>
 ```
