@@ -151,10 +151,6 @@ rebuild caches when you redeploy your app.
 If you need to be able to configure environment or need a different behavior,
 please open an issue, any improvement or suggestion is welcome.
 
-# Dev mode
-
-... is sadly not supported yet, but it will be soon.
-
 # Alternatives
 
 A few alternatives exist, at least those:
