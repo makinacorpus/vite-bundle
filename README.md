@@ -10,24 +10,15 @@ Basic usage:
  * copy or set the output build path for each app each in its own directory
    under the Symfony `public/` directory,
  * register each application `manifest.json` file in this bundle configuration,
- * use `{{ vite_asset('app_name', 'file_name) }}` where you need it.
+ * use `{{ vite_head('app_name') }}` and `{{ vite_body('app_name') }}` in pages you need it.
 
-And that's it. Twig functions will only return a URL string, it's your job
-to pass options to whatever tag you embedded it. Your application, your
-rules.
+Twig functions are opiniated and will include the app as a Javascript module.
+
+If your kernel current environment is `dev`, it will include a link toward
+the development server instead. For this to work, you need to have Vite running.
 
 Packages does not specify and Symfony dependency or version constraint. It
-should in theory work with any 5.0 version and above. Untested yet with
-Symfony 6.x that adds returns types all over the place.
-
-# Roadmap
-
- - Suport dev server, allowing configuring host name, port and base path
-   on a per-app basis.
- - Allow changing the hardcoded `dev` mode being set only when environement
-   is `dev` by configuration.
- - That's pretty much what we need I guess.
- - Test it with Symfony 6.x.
+should in theory work with any 6.0 and 7.0 version.
 
 # Setup
 
@@ -70,10 +61,10 @@ export default defineConfig({
     emptyOutDir: true,
     manifest: true,
     outDir: "../app/public/some-vite-app",
+    rollupOptions: {
+      input: 'src/main.ts',
+    },
     // The rest is up to you.
-  },
-  rollupOptions: {
-    input: 'src/main.ts',
   },
 })
 ```
@@ -82,8 +73,8 @@ The most important detail here is that this bundle requires that you build
 a `manifest.json` file, otherwise it'll be unable to find files to include.
 
 If you need to include the `main.ts` file generated asset, you need it to
-be specified in `rollupOptions.input` option, otherwise it won't appear in
-the manifest file.
+be specified in `build.rollupOptions.input` option, otherwise it won't appear
+in the manifest file.
 
 Then build it with whatever `npm` or `yarn` tool you are used to:
 
@@ -103,39 +94,49 @@ vite:
         # Using an absolute path.
         some-vite-app:
             manifest: "%kernel.project_dir%/public/some-vite-app/manifest.json"
+            dev_url: http://localhost:5173
 
         # Using a "public/" relative path.
         some-vite-app:
             manifest: "some-vite-app/manifest.json"
+            dev_url: http://localhost:5173
 ```
 
 Beware we require that it must be under the `public/` directory.
 
+The `dev_url` entry allows you to use the development mode when the kernel
+environment is `dev`. Right now the environment name is hardcoded but will
+be configurable later.
+
+If you explicitely set `null` for `dev_url` then the development mode is
+disabled.
+
 ## Put some assets anywhere you need it
 
-Edit any Twig file:
+Edit any Twig file and add the following two function calls:
 
 ```twig
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<link rel="stylesheet" href="{{ vite_asset('some-vite-app', 'styles.css') }}"/>
-<script crossorigin type="module" src="{{ vite_asset('some-vite-app', 'index.js') }}"></script>
-<script type="module">
-  {# Any code that uses code from your built module needs to be declared
-     as a module itself, because modules are loaded way further in time
-     than common scripts. #}
-  do_something_in_vite_app();
-</script>
+<!--
+  Your own head.
+  -->
+{{ vite_head('some-vite-app') }}
 </head>
 <body>
   <div id="app"></div>
 </body>
 </html>
 ```
+
+Some other parameters can change the head script behaviour:
+ - First parameter is your app name defined in yaml configuration and is
+   required.
+ - Second parameter is entry point file name, default is set to `src/main.ts`
+   i.e. the same as the given name in `vite.config.js` file
+   `build.rollupOptions.input` entry. If you gave another name, you must change
+   the name here.
 
 # A word about manifest.json parsing
 

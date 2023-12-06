@@ -12,7 +12,7 @@ final class ViteConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('vite');
         $rootNode = $treeBuilder->getRootNode();
@@ -25,6 +25,10 @@ final class ViteConfiguration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('manifest')
                                 ->info("manifest.json file absolute path or 'public/' directory relative path.")
+                            ->end()
+                            ->scalarNode('dev_url')
+                                ->info("Vite dev server URL when in a development environment.")
+                                ->defaultNull()
                             ->end()
                         ->end()
                     ->end()

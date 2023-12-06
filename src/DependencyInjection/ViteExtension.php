@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 
 final class ViteExtension extends Extension
 {
@@ -42,11 +43,19 @@ final class ViteExtension extends Extension
                 $entries = null;
             }
 
+            if ($devServerUrl = $data['dev_url']) {
+                if (!\preg_match('@^(http|https)://@', $devServerUrl)) {
+                    throw new InvalidArgumentException("Vite dev serveur URL in 'vite.app.%s.dev_url' is not an HTTP or HTTPS URL.");
+                }
+            } else {
+                $devServerUrl = null;
+            }
+
             $serviceId = Manifest::class . '.' . $name;
 
             $definition = new Definition();
             $definition->setClass(Manifest::class);
-            $definition->setArguments([$manifestPath, $publicPath, $entries]);
+            $definition->setArguments([$manifestPath, $publicPath, $entries, $devServerUrl]);
             $container->setDefinition($serviceId, $definition);
 
             $apps[$name] = new Reference($serviceId);

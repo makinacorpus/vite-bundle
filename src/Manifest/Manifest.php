@@ -6,16 +6,22 @@ namespace MakinaCorpus\ViteBundle\Manifest;
 
 class Manifest
 {
-    private string $filename;
-    private ?string $publicDirectory = null;
-    private ?array $entries = [];
-
-    public function __construct(string $filename, ?string $publicDirectory, ?array $entries = null)
-    {
-        $this->filename = $filename;
-        $this->entries = $entries;
-        $this->publicDirectory = $publicDirectory;
-    }
+    public function __construct(
+        /**
+         * manifest.json filename.
+         */
+        private string $filename,
+        /**
+         * Symfony public assets directory.
+         */
+        private ?string $publicDirectory,
+        private ?array $entries = null,
+        /**
+         * Dev server URL if specified, set to null to disable. Setting null
+         * here will completly deactivate the dev mode.
+         */
+        private ?string $devServerUrl = 'http://localhost:5173',
+    ) {}
 
     public static function validateManifestFile(string $manifestPath, string $publicPath): array
     {
@@ -36,6 +42,16 @@ class Manifest
             throw new \InvalidArgumentException(\sprintf("File is not in \"%%kernel.project_dir%%/public/\" directory: %s", $manifestPath));
         }
         $relativeFileDirectory = '/' . \trim(\dirname(\substr($manifestPath, \strlen($rpPublicPath))), '/');
+
+        // Older Vite generated build didn't contain the ".vite" folder, but
+        // more recently now they are, and relative path for asset files
+        // changes. We simply remove the extra ".vite/" path segment and it
+        // should work gracefully.
+        if (\str_contains($relativeFileDirectory, '/.vite')) {
+            $relativeFileDirectory = \str_replace('/.vite', '', $relativeFileDirectory);
+        } else if (\str_contains($relativeFileDirectory, '.vite/')) {
+            $relativeFileDirectory = \str_replace('.vite/', '', $relativeFileDirectory);
+        }
 
         if (!\file_exists($manifestPath)) {
             throw new \InvalidArgumentException(\sprintf("File does not exist: %s", $manifestPath));
@@ -67,23 +83,77 @@ class Manifest
             if (empty($data['file'])) {
                 throw new \InvalidArgumentException(\sprintf("File is not a valid Vite manifest.json file, entry '%s' is missing 'file' property in: %s", $fileName, $manifestPath));
             }
-            $entries[$fileName] = $relativeFileDirectory . '/' . $data['file'];
+
+            $entries[$fileName] = new ManifestEntry(
+                directory: $relativeFileDirectory,
+                src: $data['src'] ?? $fileName,
+                file: $data['file'],
+                isEntry: (bool) ($data['isEntry'] ?? false),
+                css: (array) ($data['css'] ?? [])
+            );
         }
 
         return $entries;
     }
 
+    /**
+     * Get development server URL.
+     */
+    public function getDevServerUrl(): ?string
+    {
+        return $this->devServerUrl;
+    }
+
+    /**
+     * Get default entry, either the first one found whose isEntry boolean
+     * value is true, or the first one if none matched.
+     */
+    public function getDefaultEntry(): ?ManifestEntry
+    {
+        $this->checkState();
+
+        $foundOrFirst = null;
+        foreach ($this->entries as $entry) {
+            \assert($entry instanceof ManifestEntry);
+            if ($entry->isEntry || !$foundOrFirst) {
+                $foundOrFirst = $entry;
+            }
+        }
+
+        return $foundOrFirst;
+    }
+
+    /**
+     * Get entry by name or default.
+     */
+    public function getEntry(?string $entry): ?ManifestEntry
+    {
+        $this->checkState();
+
+        if (!$entry) {
+            return $this->getDefaultEntry();
+        }
+        return $this->getEntry($entry);
+    }
+
+    /**
+     * Get a single entry path.
+     */
+    public function getEntryPath(?string $entry): ?string
+    {
+        if (!$entry) {
+            return $this->getDefaultEntry()?->computedFilename;
+        }
+        return $this->getEntry($entry)?->computedFilename;
+    }
+
+    /**
+     * Initialize content by parsing it.
+     */
     private function checkState(): void
     {
         if (null === $this->entries) {
             $this->entries = self::parseManifestFile($this->filename, $this->publicDirectory);
         }
-    }
-
-    public function getEntryPath(string $entry): ?string
-    {
-        $this->checkState();
-
-        return $this->entries[$entry] ?? null;
     }
 }

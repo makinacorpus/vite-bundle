@@ -14,7 +14,11 @@ class ManifestRegistry
         $this->apps = $apps;
     }
 
-    public function getEntry(string $app, string $entry): ?string
+    /**
+     * @deprecated
+     *   Kept for backward compatibility.
+     */
+    public function getEntry(string $app, ?string $entry): ?string
     {
         try {
             return $this->get($app)->getEntryPath($entry);

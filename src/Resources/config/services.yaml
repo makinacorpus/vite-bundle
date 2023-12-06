@@ -6,5 +6,5 @@ services:
         alias: vite.manifest.registry
     vite.twig.extension:
         class: MakinaCorpus\ViteBundle\Twig\Extension\ViteTwigExtension
-        arguments: ["@vite.manifest.registry"]
+        arguments: ["@vite.manifest.registry", "%kernel.environment%"]
         tags: ['twig.extension']
